@@ -1,4 +1,7 @@
-#  BugMark
+#  <center> BugMark
+[![PyPI](https://img.shields.io/pypi/v/bugmark.svg)](https://pypi.org/project/bugmark/)
+[![Python Version](https://img.shields.io/pypi/pyversions/bugmark)](https://pypi.org/project/bugmark/)
+[![License](https://img.shields.io/github/license/aaravmaloo/bugmark)](https://github.com/aaravmaloo/bugmark/blob/main/LICENSE) <br>
 
 **BugMark** is a blazing-fast, no-nonsense CLI bug tracker for developers. It lets you mark, tag, list, resolve, and delete bugs *directly from your terminal* — like `git`, but for bugs. 
 
@@ -17,6 +20,8 @@ No web dashboards, no bloated GUIs. Just `bugmark`.
 -  UUID-based unique bug IDs
 
 ---
+
+
 
 ##  Installation
 
