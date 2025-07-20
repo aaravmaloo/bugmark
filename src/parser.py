@@ -13,6 +13,17 @@ add_parser.add_argument("--file", required=True, help="File name")
 add_parser.add_argument("--line", required=True, type=int, help="Line number")
 add_parser.add_argument("--tag", required=True, action="append", help="Tags for the bug")
 
+
+list_parser = subparsers.add_parser("list", help="List all bugs")
+list_parser.add_argument("--tags", help="Filter bugs by tag")
+list_parser.add_argument("--file", help="Filter bugs by file")
+
+
+
+
+
+delete_parser = subparsers.add_parser("delete", help="Delete a bug")
+
 BUG_FILE = "bugs.json"
 args = parser.parse_args()
 
@@ -36,3 +47,16 @@ if args.command == "add":
     with open(BUG_FILE, "w") as f:
         json.dump(bugs, f, indent=4)
     print(f"Bug {bug_id} added.")
+
+
+elif args.command == "list":
+    with open("bugs.json", "r") as f:
+        bugs = json.load(f)
+
+    for bug_id, bug in bugs.items():
+        if args.tags and args.tags not in bug["tags"]:
+            continue
+        if args.file and args.file != bug["file"]:
+            continue
+
+        print(f"[{bug_id}] {bug['desc']} (File: {bug['file']}:{bug['line']}, Tags: {', '.join(bug['tags'])}, Status: {bug['status']})")
