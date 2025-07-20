@@ -18,7 +18,10 @@ list_parser = subparsers.add_parser("list", help="List all bugs")
 list_parser.add_argument("--tags", help="Filter bugs by tag")
 list_parser.add_argument("--file", help="Filter bugs by file")
 
-
+resolve_parser = subparsers.add_parser("resolve", help="Mark a bug as resolved")
+resolve_parser.add_argument("--id", help="Resolve a specific bug by ID")
+resolve_parser.add_argument("--tag", help="Resolve all bugs with a specific tag")
+resolve_parser.add_argument("--file", help="Resolve all bugs in a specific file")
 
 
 
@@ -60,3 +63,44 @@ elif args.command == "list":
             continue
 
         print(f"[{bug_id}] {bug['desc']} (File: {bug['file']}:{bug['line']}, Tags: {', '.join(bug['tags'])}, Status: {bug['status']})")
+elif args.command == "resolve":
+    if not os.path.exists("bugs.json"):
+        print("No bugs to resolve.")
+        exit()
+
+    with open("bugs.json", "r") as f:
+        bug_data = json.load(f)
+
+    resolved_time = datetime.now().isoformat()
+    found = False
+
+    if args.id:
+        if args.id in bug_data:
+            bug_data[args.id]["status"] = "resolved"
+            bug_data[args.id]["resolved"] = resolved_time
+            found = True
+        else:
+            print("Bug ID not found.")
+
+    elif args.tag:
+        for bug in bug_data.values():
+            if args.tag in bug["tags"]:
+                bug["status"] = "resolved"
+                bug["resolved"] = resolved_time
+                found = True
+
+    elif args.file:
+        for bug in bug_data.values():
+            if bug["file"] == args.file:
+                bug["status"] = "resolved"
+                bug["resolved"] = resolved_time
+                found = True
+
+    else:
+        print("Provide --id or --tag or --file to resolve.")
+        exit()
+
+    if found:
+        with open("bugs.json", "w") as f:
+            json.dump(bug_data, f, indent=2)
+        print("Resolved successfully.")
