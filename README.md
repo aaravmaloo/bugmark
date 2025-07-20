@@ -23,6 +23,5 @@ No web dashboards, no bloated GUIs. Just `bugmark`.
 ### From source:
 
 ```bash
-git clone https://github.com/yourname/bugmark
-cd bugmark
-pip install .
+pip install bugmark
+
