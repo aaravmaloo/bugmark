@@ -5,9 +5,9 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="bugmark",
-    version="0.1.1",
+    version="0.1.4",
     author="Aarav Maloo",
-    author_email="your@email.com",
+    author_email="aaravmaloo06@email.com",
     description="A command-line bug marker utility for programmers.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -21,7 +21,7 @@ setup(
     python_requires=">=3.7",
     entry_points={
         "console_scripts": [
-            "bugmark=bugmark.cli:main"
+            "bugmark=bugmark.bugmark:main",
         ],
     },
 )
