@@ -1,23 +1,27 @@
 from setuptools import setup, find_packages
 
+with open("README.md", encoding="utf-8") as f:
+    long_description = f.read()
+
 setup(
     name="bugmark",
-    version="0.1.0",  # Increment for future releases
+    version="0.1.0",
     author="Aarav Maloo",
-    description="A CLI tool for resolving and maintaining all bugs in your code.",
-    long_description=open("README.md").read(),
+    author_email="your@email.com",
+    description="A command-line bug marker utility for programmers.",
+    long_description=long_description,
     long_description_content_type="text/markdown",
-    license="MIT",
+    url="https://github.com/aaravmaloo/bugmark",
     packages=find_packages(),
-    entry_points={
-        "console_scripts": [
-            "bugmark=bugmark.__main__:main",  # Update path if needed
-        ],
-    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.7",  # Adjust if needed
+    python_requires=">=3.7",
+    entry_points={
+        "console_scripts": [
+            "bugmark=bugmark.cli:main"
+        ],
+    },
 )
