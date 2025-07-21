@@ -18,7 +18,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     entry_points={
         "console_scripts": [
             "bugmark=bugmark.bugmark:main",
