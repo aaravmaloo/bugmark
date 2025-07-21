@@ -4,6 +4,7 @@ import uuid
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(description="A command-line tool for bug tracking.")
@@ -14,6 +15,9 @@ def main():
     add_parser.add_argument("--file", required=True, help="File name")
     add_parser.add_argument("--line", required=True, type=int, help="Line number")
     add_parser.add_argument("--tag", required=True, action="append", help="Tags for the bug")
+
+    export_parser = subparsers.add_parser("export", help="export all bugs of a file")
+    export_parser.add_argument("--file", required=True, help="Name of the file")
 
     delete_parser = subparsers.add_parser("delete", help="Delete a bug by its ID")
     delete_parser.add_argument("bug_id", help="Bug ID to delete")
@@ -28,20 +32,15 @@ def main():
     resolve_parser.add_argument("--tag", help="Resolve all bugs with a specific tag")
     resolve_parser.add_argument("--file", help="Resolve all bugs in a specific file")
 
-    BUG_DIR = r"C:\Program Files\bugmark"
-    BUG_FILE = os.path.join(BUG_DIR, "bugs.json")
+    BUG_DIR = Path.home() / "bugmark"
+    BUG_FILE = BUG_DIR / "bugs.json"
 
-    if not os.path.exists(BUG_DIR):
-        try:
-            os.makedirs(BUG_DIR)
-        except PermissionError:
-            print("Permission denied: Run this script as administrator to create files in Program Files.")
-            sys.exit(1)
+    BUG_DIR.mkdir(parents=True, exist_ok=True)
 
     args = parser.parse_args()
 
-    if os.path.exists(BUG_FILE):
-        with open(BUG_FILE, "r") as f:
+    if BUG_FILE.exists():
+        with BUG_FILE.open("r") as f:
             bugs = json.load(f)
     else:
         bugs = {}
@@ -57,7 +56,7 @@ def main():
             "created": datetime.now().isoformat(),
             "resolved": None
         }
-        with open(BUG_FILE, "w") as f:
+        with BUG_FILE.open("w") as f:
             json.dump(bugs, f, indent=4)
         print(f"Bug {bug_id} added.")
 
@@ -101,14 +100,17 @@ def main():
                 bugs[bug_id]["status"] = "resolved"
                 bugs[bug_id]["resolved"] = resolved_time
             print("Matching bugs marked as resolved.")
-        with open(BUG_FILE, "w") as f:
+        with BUG_FILE.open("w") as f:
             json.dump(bugs, f, indent=4)
 
     elif args.command == "delete":
         if args.bug_id in bugs:
             del bugs[args.bug_id]
-            with open(BUG_FILE, "w") as f:
+            with BUG_FILE.open("w") as f:
                 json.dump(bugs, f, indent=4)
             print(f"Bug {args.bug_id} deleted.")
         else:
             print("Bug ID not found.")
+
+if __name__ == "__main__":
+    main()
