@@ -1,9 +1,10 @@
 import argparse
 import json
 import uuid
-import csv
-from pathlib import Path
+import os
+import sys
 from datetime import datetime
+from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(description="A command-line tool for bug tracking.")
@@ -15,13 +16,8 @@ def main():
     add_parser.add_argument("--line", required=True, type=int, help="Line number")
     add_parser.add_argument("--tag", required=True, action="append", help="Tags for the bug")
 
-    export_parser = subparsers.add_parser("export", help="Export bugs of a file")
+    export_parser = subparsers.add_parser("export", help="export all bugs of a file")
     export_parser.add_argument("--file", required=True, help="Name of the file")
-    export_parser.add_argument("--format", choices=["json", "csv", "txt"], default="json", help="Export format")
-    export_parser.add_argument("--out", help="Output file name")
-
-    compare_parser = subparsers.add_parser("compare", help="Compare bugs across files")
-    compare_parser.add_argument("--files", nargs="+", required=True, help="List of files to compare")
 
     delete_parser = subparsers.add_parser("delete", help="Delete a bug by its ID")
     delete_parser.add_argument("bug_id", help="Bug ID to delete")
@@ -36,11 +32,10 @@ def main():
     resolve_parser.add_argument("--tag", help="Resolve all bugs with a specific tag")
     resolve_parser.add_argument("--file", help="Resolve all bugs in a specific file")
 
-    try:
-        BUG_FILE = Path.home() / ".bugmark" / "bugs.json"
-        BUG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    except PermissionError:
-        raise PermissionError("permission denied")
+    BUG_DIR = Path.home() / "bugmark"
+    BUG_FILE = BUG_DIR / "bugs.json"
+
+    BUG_DIR.mkdir(parents=True, exist_ok=True)
 
     args = parser.parse_args()
 
@@ -51,7 +46,7 @@ def main():
         bugs = {}
 
     if args.command == "add":
-        bug_id = str(uuid.uuid4().int)[:6]
+        bug_id = str(uuid.uuid4().int)[:4]
         bugs[bug_id] = {
             "file": args.file,
             "line": args.line,
@@ -67,19 +62,27 @@ def main():
 
     elif args.command == "list":
         filtered = {}
+        show_resolved = args.resolved
+
         for bug_id, bug in bugs.items():
             if args.tag and args.tag not in bug["tags"]:
                 continue
             if args.file and args.file != bug["file"]:
                 continue
-            if not args.resolved and bug["status"] == "resolved":
+            if not show_resolved and bug["status"] == "resolved":
                 continue
             filtered[bug_id] = bug
+
+        resolved_count = sum(1 for bug in bugs.values() if bug["status"] == "resolved")
+
         if not filtered:
             print("No matching bugs found.")
         else:
             for bug_id, bug in filtered.items():
                 print(f"[{bug_id}] {bug['desc']} ({bug['file']}:{bug['line']}) [{', '.join(bug['tags'])}] - {bug['status']}")
+
+        if not show_resolved and resolved_count > 0:
+            print(f"({resolved_count} bugs resolved)")
 
     elif args.command == "resolve":
         resolved_time = datetime.now().isoformat()
@@ -108,42 +111,6 @@ def main():
             print(f"Bug {args.bug_id} deleted.")
         else:
             print("Bug ID not found.")
-
-    elif args.command == "export":
-        export_data = {bid: b for bid, b in bugs.items() if b["file"] == args.file}
-        if not export_data:
-            print("No bugs found for this file.")
-            return
-        out_file = args.out if args.out else f"{args.file}_bugs.{args.format}"
-        if args.format == "json":
-            with open(out_file, "w") as f:
-                json.dump(export_data, f, indent=4)
-        elif args.format == "csv":
-            with open(out_file, "w", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow(["ID", "File", "Line", "Description", "Tags", "Status", "Created", "Resolved"])
-                for bid, b in export_data.items():
-                    writer.writerow([bid, b["file"], b["line"], b["desc"], ";".join(b["tags"]), b["status"], b["created"], b["resolved"]])
-        elif args.format == "txt":
-            with open(out_file, "w") as f:
-                for bid, b in export_data.items():
-                    f.write(f"[{bid}] {b['desc']} ({b['file']}:{b['line']}) [{', '.join(b['tags'])}] - {b['status']}\n")
-        print(f"Exported bugs to {out_file}")
-
-    elif args.command == "compare":
-        files = args.files
-        grouped = {f: [] for f in files}
-        for bug_id, bug in bugs.items():
-            if bug["file"] in files:
-                grouped[bug["file"]].append((bug_id, bug))
-        common_desc = set.intersection(*(set(bug["desc"] for _, bug in grouped[f]) for f in files if grouped[f]))
-        print("Common bugs across files:")
-        for desc in common_desc:
-            print(f"- {desc}")
-        print("\nUnique bugs per file:")
-        for f in files:
-            unique = [bug["desc"] for _, bug in grouped[f] if bug["desc"] not in common_desc]
-            print(f"{f}: {unique if unique else 'None'}")
 
 if __name__ == "__main__":
     main()
