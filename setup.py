@@ -5,7 +5,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="bugmark",
-    version="0.1.5",
+    version="1.0.0",
     author="Aarav Maloo",
     author_email="aaravmaloo06@email.com",
     description="A command-line bug marker utility for programmers.",
