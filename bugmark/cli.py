@@ -81,6 +81,9 @@ def main():
     # Sync
     subparsers.add_parser("sync", help="Sync bugs with Git (pull)")
 
+    # GUI
+    subparsers.add_parser("gui", help="Open the Bugmark GUI")
+
     args = parser.parse_args()
     core = BugmarkCore()
 
@@ -217,6 +220,11 @@ def main():
     elif args.command == "sync":
         success, msg = core.git_sync()
         print(msg)
+
+    elif args.command == "gui":
+        from .gui import BugmarkApp
+        app = BugmarkApp(core)
+        app.run()
 
     elif not args.command:
         parser.print_help()
